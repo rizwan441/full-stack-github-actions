@@ -7,9 +7,11 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # --------------------------
+  # 1. Syntax Check
+  # --------------------------
   syntax-check:
     runs-on: Agent-1
-
     strategy:
       matrix:
         node-version: [18.19.1]
@@ -23,18 +25,19 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # Frontend syntax check
       - name: Frontend Compilation (JS Syntax Check)
         run: |
           cd frontend
           find . -name "*.js" -exec node --check {} +
 
-      # Backend syntax check
       - name: Backend Compilation (JS Syntax Check)
         run: |
           cd backend
           find . -name "*.js" -exec node --check {} +
 
+  # --------------------------
+  # 2. GitLeaks Secret Scan
+  # --------------------------
   gitleaks-scan:
     runs-on: Agent-1
     needs: syntax-check   # ensures it runs after syntax-check
@@ -44,6 +47,28 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run GitLeaks Scan
-        uses: gitleaks/gitleaks-action@v2
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+          chmod +x gitleaks
+          ./gitleaks detect --source . --redact --exit-code 1 --report-path gitleaks-report.json
+
+  # --------------------------
+  # 3. Trivy Vulnerability Scan
+  # --------------------------
+  trivy-scan:
+    runs-on: Agent-1
+    needs: gitleaks-scan   # ensures it runs after gitleaks-scan
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          args: detect --source . --redact --exit-code 1 --report-path=gitleaks-report.json
+          scan-type: 'fs'
+          scan-ref: .
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
