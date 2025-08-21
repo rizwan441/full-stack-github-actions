@@ -73,8 +73,9 @@ jobs:
             -Dsonar.projectKey=myorg_frontend
             -Dsonar.projectName=myorg_frontend
             -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.js,**/*.ts
         env:
+          SONAR_NODEJS_PATH: /usr/bin/node  # adjust path
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
@@ -92,8 +93,9 @@ jobs:
             -Dsonar.projectKey=myorg_backend
             -Dsonar.projectName=myorg_backend
             -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.js,**/*.ts
         env:
+          SONAR_NODEJS_PATH: /usr/bin/node  # adjust path
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
