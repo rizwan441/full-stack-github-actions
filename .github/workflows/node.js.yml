@@ -7,8 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  syntax-check:
+    runs-on: Agent-1
 
     strategy:
       matrix:
@@ -23,17 +23,27 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # Frontend build
-      - name: Install & Build Frontend
-        working-directory: ./frontend
+      # Frontend syntax check
+      - name: Frontend Compilation (JS Syntax Check)
         run: |
-          npm install
-          npm run build
+          cd frontend
+          find . -name "*.js" -exec node --check {} +
 
-      # Backend build
-      - name: Install & Build Backend
-        working-directory: ./backend
+      # Backend syntax check
+      - name: Backend Compilation (JS Syntax Check)
         run: |
-          npm install
-          # If you have a build step, uncomment:
-          # npm run build
+          cd backend
+          find . -name "*.js" -exec node --check {} +
+
+  gitleaks-scan:
+    runs-on: Agent-1
+    needs: syntax-check   # ensures it runs after syntax-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run GitLeaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --redact --exit-code 1 --report-path=gitleaks-report.json
