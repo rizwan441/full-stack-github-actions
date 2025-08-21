@@ -110,3 +110,4 @@ app.get("/", (req, res) => {
 
 ## Conclusion
 This project demonstrates how to build a CRUD application using React, Express.js, MySQL 2, Axios, and CORS. The application allows users to perform basic CRUD operations on a dataset.
+# full-stack-github-actions
