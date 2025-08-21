@@ -36,7 +36,7 @@ jobs:
 
   gitleaks-scan:
     runs-on: Agent-1
-    needs: syntax-check   # ensures it runs after syntax-check
+    needs: syntax-check
 
     steps:
       - name: Checkout code
@@ -49,7 +49,7 @@ jobs:
 
   trivy-scan:
     runs-on: Agent-1
-    needs: gitleaks-scan   # ensures it runs after gitleaks-scan
+    needs: gitleaks-scan
 
     steps:
       - name: Checkout code
@@ -64,3 +64,43 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+  sonar-frontend:
+    runs-on: Agent-1
+    needs: trivy-scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SonarQube Scan (Frontend)
+        uses: sonarsource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: frontend
+          args: >
+            -Dsonar.projectKey=myorg_frontend
+            -Dsonar.projectName=myorg_frontend
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  sonar-backend:
+    runs-on: Agent-1
+    needs: sonar-frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SonarQube Scan (Backend)
+        uses: sonarsource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: backend
+          args: >
+            -Dsonar.projectKey=myorg_backend
+            -Dsonar.projectName=myorg_backend
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
