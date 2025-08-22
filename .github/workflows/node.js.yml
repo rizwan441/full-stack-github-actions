@@ -65,6 +65,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'   # SonarQube requires Node 16+ for JS/TS analysis
+
       - name: SonarQube Scan (Frontend)
         uses: sonarsource/sonarqube-scan-action@master
         with:
@@ -73,9 +79,8 @@ jobs:
             -Dsonar.projectKey=myorg_frontend
             -Dsonar.projectName=myorg_frontend
             -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.js,**/*.ts
-            -Dsonar.nodejs.executable=/usr/bin/node
-
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+            -Dsonar.nodejs.executable=$(which node)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -86,6 +91,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: SonarQube Scan (Backend)
         uses: sonarsource/sonarqube-scan-action@master
         with:
@@ -94,9 +105,8 @@ jobs:
             -Dsonar.projectKey=myorg_backend
             -Dsonar.projectName=myorg_backend
             -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.js,**/*.ts
-            -Dsonar.nodejs.executable=/usr/bin/node
-
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+            -Dsonar.nodejs.executable=$(which node)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
