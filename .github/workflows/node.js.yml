@@ -60,7 +60,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
   sonar-frontend:
-    runs-on: Agent-1
+    runs-on: ubuntu-latest
     needs: trivy-scan
     steps:
       - name: Checkout code
@@ -74,13 +74,14 @@ jobs:
             -Dsonar.projectName=myorg_frontend
             -Dsonar.sources=.
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.js,**/*.ts
+            -Dsonar.nodejs.executable=/usr/bin/node
+
         env:
-          SONAR_NODEJS_PATH: /usr/bin/node  # adjust path
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   sonar-backend:
-    runs-on: Agent-1
+    runs-on: ubuntu-latest
     needs: sonar-frontend
     steps:
       - name: Checkout code
@@ -94,13 +95,14 @@ jobs:
             -Dsonar.projectName=myorg_backend
             -Dsonar.sources=.
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.js,**/*.ts
+            -Dsonar.nodejs.executable=/usr/bin/node
+
         env:
-          SONAR_NODEJS_PATH: /usr/bin/node  # adjust path
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   docker-build-and-push:
-    runs-on: Agent-1
+    runs-on: ubuntu-latest
     needs: sonar-backend
     steps:
       - name: Checkout code
