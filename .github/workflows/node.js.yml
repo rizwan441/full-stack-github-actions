@@ -155,3 +155,29 @@ jobs:
 
       - name: Push Backend Docker Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/myorg-backend:${{ github.sha }}
+      # Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1   # change to your region
+
+      # Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push Frontend Image to ECR
+      - name: Push Frontend Image to ECR
+        run: |
+          docker tag ${{ secrets.DOCKER_USERNAME }}/myorg-frontend:${{ github.sha }} \
+            ${{ steps.login-ecr.outputs.registry }}/myorg-frontend:${{ github.sha }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/myorg-frontend:${{ github.sha }}
+
+      # Tag & Push Backend Image to ECR
+      - name: Push Backend Image to ECR
+        run: |
+          docker tag ${{ secrets.DOCKER_USERNAME }}/myorg-backend:${{ github.sha }} \
+            ${{ steps.login-ecr.outputs.registry }}/myorg-backend:${{ github.sha }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/myorg-backend:${{ github.sha }}
